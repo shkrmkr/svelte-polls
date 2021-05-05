@@ -1,13 +1,17 @@
 <script lang="ts">
-  import type { Poll } from "src/types";
+  import { fade, scale } from "svelte/transition";
+  import { flip } from "svelte/animate";
+  import { pollStore } from "../stores/poll.store";
   import PollDetails from "./PollDetails.svelte";
-
-  export let polls: Poll[];
 </script>
 
 <div class="poll-list">
-  {#each polls as poll (poll.id)}
-    <PollDetails {poll} on:vote />
+  {#each $pollStore as poll (poll.id)}
+    <div in:fade out:scale|local animate:flip={{ duration: 500 }}>
+      <PollDetails {poll} />
+    </div>
+  {:else}
+    <p>No polls yet :(</p>
   {/each}
 </div>
 

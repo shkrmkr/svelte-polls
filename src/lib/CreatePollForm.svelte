@@ -1,12 +1,12 @@
 <script lang="ts">
   import { nanoid } from "nanoid";
-  import type { Poll, PollFormFields } from "src/types";
   import { createEventDispatcher } from "svelte";
+  import { pollStore } from "../stores/poll.store";
+  import type { Poll, PollFormFields } from "../types";
   import Button from "./Button.svelte";
 
   const formFields: PollFormFields = { question: "", answerA: "", answerB: "" };
   let showErrors = false;
-  const dispatch = createEventDispatcher<{ addPoll: Poll }>();
 
   $: errors = {
     question:
@@ -19,18 +19,22 @@
 
   $: isValid = Object.values(errors).every((value) => value === "");
 
+  const dispatch = createEventDispatcher();
+
   const handleSubmit = () => {
     showErrors = true;
 
     if (isValid) {
-      dispatch("addPoll", {
-        id: nanoid(5),
-        votesA: 0,
-        votesB: 0,
-        ...formFields,
-      });
-    } else {
-      console.log(errors);
+      pollStore.update((prev) => [
+        {
+          id: nanoid(5),
+          votesA: 0,
+          votesB: 0,
+          ...formFields,
+        },
+        ...prev,
+      ]);
+      dispatch("add");
     }
   };
 </script>

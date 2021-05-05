@@ -1,52 +1,19 @@
 <script lang="ts">
-  import { nanoid } from "nanoid";
   import CreatePollForm from "./lib/CreatePollForm.svelte";
   import Footer from "./lib/Footer.svelte";
   import Header from "./lib/Header.svelte";
   import PollList from "./lib/PollList.svelte";
   import Tabs from "./lib/Tabs.svelte";
-  import type { Poll, Vote } from "./types";
 
   let tabs = ["Current Polls", "Add New Poll"];
   let activeTabIndex = 0;
-  let polls: Poll[] = [
-    {
-      id: nanoid(5),
-      question: "Python or JavaScript?",
-      answerA: "Python",
-      answerB: "JavaScript",
-      votesA: 0,
-      votesB: 100,
-    },
-  ];
 
   const changeTab = (e: CustomEvent<number>) => {
     activeTabIndex = e.detail;
   };
 
-  const addPoll = ({ detail: newPoll }: CustomEvent<Poll>) => {
-    polls = [newPoll, ...polls];
+  const handleAddPoll = () => {
     activeTabIndex = 0;
-  };
-
-  const handleVote = ({ detail: votes }: CustomEvent<Vote>) => {
-    polls = polls.map((poll) => {
-      if (poll.id !== votes.pollId) {
-        return poll;
-      }
-
-      if (votes.option === "A") {
-        return {
-          ...poll,
-          votesA: poll.votesA + 1,
-        };
-      } else {
-        return {
-          ...poll,
-          votesB: poll.votesB + 1,
-        };
-      }
-    });
   };
 </script>
 
@@ -55,9 +22,9 @@
   <main>
     <Tabs {tabs} {activeTabIndex} on:changeTab={changeTab} />
     {#if activeTabIndex === 0}
-      <PollList {polls} on:vote={handleVote} />
+      <PollList />
     {:else if activeTabIndex === 1}
-      <CreatePollForm on:addPoll={addPoll} />
+      <CreatePollForm on:add={handleAddPoll} />
     {/if}
   </main>
   <Footer />

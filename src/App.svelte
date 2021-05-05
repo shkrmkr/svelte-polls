@@ -1,51 +1,80 @@
 <script lang="ts">
-  let name = "Mario";
-  let beltColor = "black";
+  import { nanoid } from "nanoid";
+  import CreatePollForm from "./lib/CreatePollForm.svelte";
+  import Footer from "./lib/Footer.svelte";
+  import Header from "./lib/Header.svelte";
+  import PollList from "./lib/PollList.svelte";
+  import Tabs from "./lib/Tabs.svelte";
+  import type { Poll, Vote } from "./types";
 
-  const handleClick = () => {
-    beltColor = "orange";
+  let tabs = ["Current Polls", "Add New Poll"];
+  let activeTabIndex = 0;
+  let polls: Poll[] = [
+    {
+      id: nanoid(5),
+      question: "Python or JavaScript?",
+      answerA: "Python",
+      answerB: "JavaScript",
+      votesA: 0,
+      votesB: 100,
+    },
+  ];
+
+  const changeTab = (e: CustomEvent<number>) => {
+    activeTabIndex = e.detail;
+  };
+
+  const addPoll = ({ detail: newPoll }: CustomEvent<Poll>) => {
+    polls = [newPoll, ...polls];
+    activeTabIndex = 0;
+  };
+
+  const handleVote = ({ detail: votes }: CustomEvent<Vote>) => {
+    polls = polls.map((poll) => {
+      if (poll.id !== votes.pollId) {
+        return poll;
+      }
+
+      if (votes.option === "A") {
+        return {
+          ...poll,
+          votesA: poll.votesA + 1,
+        };
+      } else {
+        return {
+          ...poll,
+          votesB: poll.votesB + 1,
+        };
+      }
+    });
   };
 </script>
 
-<main>
-  <h1>Hello {name}</h1>
-  <p>{beltColor} belt</p>
-  <button on:click={handleClick}>Change Color</button>
-</main>
+<div class="app">
+  <Header />
+  <main>
+    <Tabs {tabs} {activeTabIndex} on:changeTab={changeTab} />
+    {#if activeTabIndex === 0}
+      <PollList {polls} on:vote={handleVote} />
+    {:else if activeTabIndex === 1}
+      <CreatePollForm on:addPoll={addPoll} />
+    {/if}
+  </main>
+  <Footer />
+</div>
 
 <style>
-  :root {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
 
   main {
-    text-align: center;
-    padding: 1em;
-    margin: 0 auto;
-  }
-
-  h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 2rem;
-    font-weight: 300;
-    line-height: 1.1;
-    max-width: 14rem;
-  }
-
-  p {
-    max-width: 14rem;
-    line-height: 1.35;
-  }
-
-  @media (min-width: 480px) {
-    h1 {
-      max-width: none;
-    }
-
-    p {
-      max-width: none;
-    }
+    flex: 1;
+    font-size: 1.5rem;
+    max-width: 1000px;
+    width: 90%;
+    margin: 2rem auto;
   }
 </style>
